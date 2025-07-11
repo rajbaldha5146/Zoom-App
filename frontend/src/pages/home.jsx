@@ -38,7 +38,7 @@ function HomeComponent() {
     const handleKeyPress = (event) => {
         if (event.key === 'Enter') {
             handleJoinVideoCall();
-        }
+    }
     };
 
     return (
@@ -65,7 +65,7 @@ function HomeComponent() {
                         }}
                     >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <VideoCallIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+                            <img src="/logo.png" alt="ConnectHub Logo" style={{ width: 36, height: 36, borderRadius: '50%' }} />
                             <Typography
                                 variant="h5"
                                 sx={{
@@ -76,7 +76,7 @@ function HomeComponent() {
                                     backgroundClip: 'text',
                                 }}
                             >
-                                Apna Video Call
+                                ConnectHub
                             </Typography>
                         </Box>
 
@@ -119,8 +119,8 @@ function HomeComponent() {
                                     },
                                 }}
                             >
-                                Logout
-                            </Button>
+                        Logout
+                    </Button>
                         </Box>
                     </Box>
                 </Container>

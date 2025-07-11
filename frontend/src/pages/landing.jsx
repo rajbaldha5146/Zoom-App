@@ -9,8 +9,9 @@ export default function LandingPage() {
     return (
         <div className='landingPageContainer'>
             <nav>
-                <div className='navHeader'>
-                    <h2>Apna Video Call</h2>
+                <div className='navHeader' style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src="/logo.png" alt="ConnectHub Logo" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+                    <h2>ConnectHub</h2>
                 </div>
                 <div className='navlist'>
                     <p onClick={() => {
@@ -34,7 +35,7 @@ export default function LandingPage() {
                 <div>
                     <h1><span style={{ color: "#FF9839" }}>Connect</span> with your loved Ones</h1>
 
-                    <p>Cover a distance by Apna Video Call</p>
+                    <p>Connect seamlessly with ConnectHub</p>
                     <div role='button'>
                         <Link to={"/auth"}>Get Started</Link>
                     </div>

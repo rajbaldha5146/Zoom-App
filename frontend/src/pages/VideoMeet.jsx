@@ -405,7 +405,7 @@ export default function VideoMeetComponent() {
             let tracks = localVideoref.current.srcObject.getTracks()
             tracks.forEach(track => track.stop())
         } catch (e) { }
-        window.location.href = "/"
+        window.location.href = "/home"
     }
 
     let openChat = () => {
@@ -523,7 +523,13 @@ export default function VideoMeetComponent() {
                     </div>
 
 
-                    <video className={styles.meetUserVideo} ref={localVideoref} autoPlay muted></video>
+                    <video
+                        ref={localVideoref}
+                        autoPlay
+                        muted
+                        className={styles.meetUserVideo}
+                        style={{ left: 20, right: 'auto', zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '3px solid #fff' }}
+                    />
 
                     <div className={styles.conferenceView}>
                         {videos.map((video) => (

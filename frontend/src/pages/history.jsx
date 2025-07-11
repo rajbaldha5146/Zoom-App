@@ -252,7 +252,7 @@ export default function History() {
                                                 <CodeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
                                                 <Typography variant="body2" color="text.secondary">
                                                     Meeting Code:
-                                                </Typography>
+                                    </Typography>
                                             </Box>
                                             <Chip
                                                 label={meeting.meetingCode}
@@ -266,9 +266,9 @@ export default function History() {
                                             <AccessTimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                                             <Typography variant="body2" color="text.secondary">
                                                 {formatDate(meeting.date)}
-                                            </Typography>
+                                    </Typography>
                                         </Box>
-                                    </CardContent>
+                                </CardContent>
 
                                     <CardActions sx={{ p: 3, pt: 0 }}>
                                         <Button
@@ -292,7 +292,7 @@ export default function History() {
                                             Rejoin Meeting
                                         </Button>
                                     </CardActions>
-                                </Card>
+                            </Card>
                             </Grid>
                         ))}
                     </Grid>

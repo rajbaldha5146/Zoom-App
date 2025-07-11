@@ -170,21 +170,23 @@ export default function Authentication() {
                         alignItems: 'center',
                         color: 'white',
                         textAlign: 'center',
-                        padding: 4,
+                        padding: { xs: 2, sm: 3, md: 4 },
                     }}
                 >
-                    <Box sx={{ maxWidth: 500 }}>
-                        <VideoCallIcon sx={{ fontSize: 80, mb: 3, opacity: 0.9 }} />
+                    <Box sx={{ maxWidth: 500, px: { xs: 2, sm: 0 } }}>
+                        <img src="/logo.png" alt="ConnectHub Logo" style={{ width: 60, height: 60, borderRadius: '50%', marginBottom: 24, marginTop: 8 }} />
                         <Typography variant="h3" component="h1" sx={{ 
                             fontWeight: 800, 
                             mb: 2,
+                            fontSize: { xs: '2rem', sm: '3rem' },
                             textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                         }}>
-                            Welcome to Apna Video Call
+                            Welcome to ConnectHub
                         </Typography>
                         <Typography variant="h6" sx={{ 
                             opacity: 0.9,
                             lineHeight: 1.6,
+                            fontSize: { xs: '1rem', sm: '1.25rem' },
                             textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                         }}>
                             Connect with your loved ones through high-quality video calls. 
@@ -200,7 +202,7 @@ export default function Authentication() {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
-                        padding: 4,
+                        padding: { xs: 2, sm: 3, md: 4 },
                         background: 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(10px)',
                     }}>
@@ -260,15 +262,15 @@ export default function Authentication() {
                         <Box component="form" noValidate sx={{ mt: 1, width: '100%' }}>
                             {formState === 1 && (
                                 <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
+                                margin="normal"
+                                required
+                                fullWidth
                                     id="name"
-                                    label="Full Name"
+                                label="Full Name"
                                     name="name"
-                                    value={name}
-                                    autoFocus
-                                    onChange={(e) => setName(e.target.value)}
+                                value={name}
+                                autoFocus
+                                onChange={(e) => setName(e.target.value)}
                                     sx={{ mb: 2 }}
                                 />
                             )}
