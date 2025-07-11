@@ -405,7 +405,7 @@ export default function VideoMeetComponent() {
             let tracks = localVideoref.current.srcObject.getTracks()
             tracks.forEach(track => track.stop())
         } catch (e) { }
-        window.location.href = "/home"
+        window.location.href = "/"
     }
 
     let openChat = () => {
@@ -471,30 +471,22 @@ export default function VideoMeetComponent() {
                     {showModal ? <div className={styles.chatRoom}>
 
                         <div className={styles.chatContainer}>
-                            <h1>Chat</h1>
-
-                            <div className={styles.chattingDisplay}>
-
-                                {messages.length !== 0 ? messages.map((item, index) => {
-
-                                    console.log(messages)
-                                    return (
-                                        <div style={{ marginBottom: "20px" }} key={index}>
-                                            <p style={{ fontWeight: "bold" }}>{item.sender}</p>
-                                            <p>{item.data}</p>
-                                        </div>
-                                    )
-                                }) : <p>No Messages Yet</p>}
-
-
+                            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8}}>
+                                <h2 style={{margin: 0, fontSize: 22, fontWeight: 700, color: '#222'}}>Chat</h2>
+                                <Button size="small" variant="outlined" color="primary" style={{borderRadius: 8, fontWeight: 600, fontSize: 13, padding: '2px 10px'}} onClick={closeChat}>Close</Button>
                             </div>
-
-                            <div className={styles.chattingArea}>
-                                <TextField value={message} onChange={(e) => setMessage(e.target.value)} id="outlined-basic" label="Enter Your chat" variant="outlined" />
-                                <Button variant='contained' onClick={sendMessage}>Send</Button>
+                            <div className={styles.chattingDisplay} style={{flex: 1, overflowY: 'auto', minHeight: 120, maxHeight: 220, marginBottom: 8}}>
+                                {messages.length !== 0 ? messages.map((item, index) => (
+                                    <div style={{ marginBottom: "16px" }} key={index}>
+                                        <p style={{ fontWeight: "bold", marginBottom: 2, color: '#667eea' }}>{item.sender}</p>
+                                        <p style={{ margin: 0, color: '#222' }}>{item.data}</p>
+                                    </div>
+                                )) : <p style={{color: '#888'}}>No Messages Yet</p>}
                             </div>
-
-
+                            <div className={styles.chattingArea} style={{display: 'flex', gap: 8}}>
+                                <TextField value={message} onChange={(e) => setMessage(e.target.value)} id="outlined-basic" label="Enter Your chat" variant="outlined" size="small" style={{flex: 1}} />
+                                <Button variant='contained' onClick={sendMessage} size="small" style={{fontWeight: 600}}>Send</Button>
+                            </div>
                         </div>
                     </div> : <></>}
 
@@ -532,23 +524,23 @@ export default function VideoMeetComponent() {
                     />
 
                     <div className={styles.conferenceView}>
-                        {videos.map((video) => (
-                            <div key={video.socketId}>
-                                <video
-
-                                    data-socket={video.socketId}
-                                    ref={ref => {
-                                        if (ref && video.stream) {
-                                            ref.srcObject = video.stream;
-                                        }
-                                    }}
-                                    autoPlay
-                                >
-                                </video>
+                        {videos.length === 0 ? (
+                            <div style={{width: '100vw', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 24, fontWeight: 600}}>
+                                Waiting for other participant to join...
                             </div>
-
-                        ))}
-
+                        ) : (
+                            <video
+                                data-socket={videos[0].socketId}
+                                ref={ref => {
+                                    if (ref && videos[0].stream) {
+                                        ref.srcObject = videos[0].stream;
+                                    }
+                                }}
+                                autoPlay
+                                className={styles.remoteVideo}
+                                style={{ width: '100vw', height: '100%', objectFit: 'cover', borderRadius: 18, background: '#000' }}
+                            />
+                        )}
                     </div>
 
                 </div>
