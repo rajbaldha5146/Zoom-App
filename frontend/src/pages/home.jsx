@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import withAuth from '../utils/withAuth'
 import { useNavigate } from 'react-router-dom'
-import "../App.css";
+import styles from '../styles/Home.module.css';
 import { 
     Button, 
     IconButton, 
@@ -42,7 +42,8 @@ function HomeComponent() {
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
+        <div className={styles.homeWrapper}>
+        <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)' }}>
             {/* Navigation Bar */}
             <Box
                 sx={{
@@ -100,7 +101,7 @@ function HomeComponent() {
                                 History
                             </Button>
                             <Button
-                                variant="outlined"
+                                variant="text"
                                 onClick={() => {
                                     localStorage.removeItem("token");
                                     navigate("/auth");
@@ -111,11 +112,9 @@ function HomeComponent() {
                                     borderRadius: 2,
                                     px: 3,
                                     py: 1,
-                                    borderColor: 'error.main',
-                                    color: 'error.main',
+                                    color: 'text.secondary',
                                     '&:hover': {
-                                        backgroundColor: 'error.main',
-                                        color: 'white',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
                                     },
                                 }}
                             >
@@ -128,13 +127,13 @@ function HomeComponent() {
 
             {/* Main Content */}
             <Container maxWidth="xl" sx={{ py: 6 }}>
-                <Grid container spacing={6} alignItems="center">
+                <Grid container spacing={4} justifyContent="center" alignItems="stretch">
                     {/* Left Panel - Join Meeting */}
                     <Grid item xs={12} lg={6}>
                         <Paper
                             elevation={0}
                             sx={{
-                                p: 5,
+                                p: { xs: 3, sm: 4, md: 5 },
                                 borderRadius: 4,
                                 background: 'rgba(255, 255, 255, 0.9)',
                                 backdropFilter: 'blur(10px)',
@@ -255,6 +254,10 @@ function HomeComponent() {
                                                 transform: 'translateY(-5px)',
                                                 boxShadow: '0 15px 30px rgba(0, 0, 0, 0.1)',
                                             },
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
                                         }}
                                     >
                                         <HighQualityIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
@@ -282,6 +285,10 @@ function HomeComponent() {
                                                 transform: 'translateY(-5px)',
                                                 boxShadow: '0 15px 30px rgba(0, 0, 0, 0.1)',
                                             },
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
                                         }}
                                     >
                                         <SecurityIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
@@ -309,6 +316,10 @@ function HomeComponent() {
                                                 transform: 'translateY(-5px)',
                                                 boxShadow: '0 15px 30px rgba(0, 0, 0, 0.1)',
                                             },
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
                                         }}
                                     >
                                         <GroupIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
@@ -336,6 +347,10 @@ function HomeComponent() {
                                                 transform: 'translateY(-5px)',
                                                 boxShadow: '0 15px 30px rgba(0, 0, 0, 0.1)',
                                             },
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
                                         }}
                                     >
                                         <VideoCallIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
@@ -353,6 +368,7 @@ function HomeComponent() {
                 </Grid>
             </Container>
         </Box>
+        </div>
     );
 }
 

@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
             console.log(request.data)
 
             if (request.status === httpStatus.OK) {
-                localStorage.setItem("token", request.data.token);
+                document.cookie = `token=${request.data.token}; path=/; max-age=${60*60*24*7}`; // 1 week expiry
                 router("/home")
             }
         } catch (err) {
@@ -62,12 +62,11 @@ export const AuthProvider = ({ children }) => {
         try {
             let request = await client.get("/get_all_activity", {
                 params: {
-                    token: localStorage.getItem("token")
+                    token: getCookie("token")
                 }
             });
             return request.data
-        } catch
-         (err) {
+        } catch (err) {
             throw err;
         }
     }
@@ -75,7 +74,7 @@ export const AuthProvider = ({ children }) => {
     const addToUserHistory = async (meetingCode) => {
         try {
             let request = await client.post("/add_to_activity", {
-                token: localStorage.getItem("token"),
+                token: getCookie("token"),
                 meeting_code: meetingCode
             });
             return request
@@ -84,6 +83,11 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
 
     const data = {
         userData, setUserData, addToUserHistory, getHistoryOfUser, handleRegister, handleLogin

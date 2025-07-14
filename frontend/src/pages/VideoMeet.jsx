@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import io from "socket.io-client";
-import { Badge, IconButton, TextField } from '@mui/material';
+import { Badge, IconButton, TextField, Box, Container, Typography, Paper, Card, CardContent } from '@mui/material';
 import { Button } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import styles from "../styles/videoComponent.module.css";
@@ -12,6 +13,7 @@ import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare'
 import ChatIcon from '@mui/icons-material/Chat'
 import server from '../environment';
+import { useNavigate } from 'react-router-dom';
 
 const server_url = server;
 
@@ -54,9 +56,11 @@ export default function VideoMeetComponent() {
 
     let [username, setUsername] = useState("");
 
-    const videoRef = useRef([])
+    let [videos, setVideos] = useState([]);
 
-    let [videos, setVideos] = useState([])
+    let videoRef = useRef([]);
+
+    const navigate = useNavigate();
 
     // TODO
     // if(isChrome() === false) {
@@ -68,7 +72,25 @@ export default function VideoMeetComponent() {
         console.log("HELLO")
         getPermissions();
 
-    })
+        // Cleanup function
+        return () => {
+            // Close all peer connections
+            for (let id in connections) {
+                connections[id].close();
+                delete connections[id];
+            }
+            
+            // Close the socket
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+            
+            // Stop all tracks in the local stream
+            if (window.localStream) {
+                window.localStream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [])
 
     let getDislayMedia = () => {
         if (screen) {
@@ -382,10 +404,23 @@ export default function VideoMeetComponent() {
         return Object.assign(stream.getVideoTracks()[0], { enabled: false })
     }
 
-    let handleVideo = () => {
-        setVideo(!video);
-        // getUserMedia();
+    let toggleVideo = () => {
+        if (videoAvailable) {
+            // Stop all video tracks
+            window.localStream.getVideoTracks().forEach(track => track.stop());
+            
+            // Create black video placeholder
+            let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
+            window.localStream = blackSilence();
+            localVideoref.current.srcObject = window.localStream;
+        } else {
+            // Restart video stream
+            getUserMedia();
+        }
+        
+        setVideoAvailable(!videoAvailable);
     }
+
     let handleAudio = () => {
         setAudio(!audio)
         // getUserMedia();
@@ -397,6 +432,15 @@ export default function VideoMeetComponent() {
         }
     }, [screen])
     let handleScreen = () => {
+        if (screen) {
+            // Currently sharing, so we want to stop
+            // Stop the screen sharing tracks
+            if (window.localStream) {
+                window.localStream.getTracks().forEach(track => track.stop());
+            }
+            // Immediately revert to user media (camera and microphone)
+            getUserMedia();
+        }
         setScreen(!screen);
     }
 
@@ -405,7 +449,7 @@ export default function VideoMeetComponent() {
             let tracks = localVideoref.current.srcObject.getTracks()
             tracks.forEach(track => track.stop())
         } catch (e) { }
-        window.location.href = "/"
+        navigate("/home");
     }
 
     let openChat = () => {
@@ -446,107 +490,505 @@ export default function VideoMeetComponent() {
     }
 
 
+    // Create a dark theme
+    const darkTheme = createTheme({
+        palette: {
+            mode: 'dark',
+            primary: {
+                main: '#667eea',
+            },
+            background: {
+                default: '#121212',
+                paper: '#1e1e1e',
+            },
+        },
+        components: {
+            MuiButton: {
+                styleOverrides: {
+                    root: {
+                        borderRadius: 8,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        padding: '8px 16px',
+                    },
+                },
+            },
+            MuiTextField: {
+                styleOverrides: {
+                    root: {
+                        '& .MuiOutlinedInput-root': {
+                            borderRadius: 8,
+                        },
+                    },
+                },
+            },
+        },
+    });
+
     return (
-        <div>
+        <ThemeProvider theme={darkTheme}>
+            <Box sx={{
+                minHeight: '100vh',
+                bgcolor: 'background.default',
+                color: 'text.primary',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: { xs: 2, sm: 3, md: 4 },
+            }}>
 
-            {askForUsername === true ?
+            {askForUsername === true ? (
+                <Card sx={{
+                    p: { xs: 3, sm: 4 },
+                    width: '100%',
+                    maxWidth: 500,
+                    textAlign: 'center',
+                    bgcolor: 'background.paper',
+                    boxShadow: 3,
+                    borderRadius: 3,
+                }}>
+                    <Typography variant="h4" component="h1" gutterBottom sx={{ 
+                        fontWeight: 700,
+                        mb: 4,
+                        background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                    }}>
+                        Join Meeting
+                    </Typography>
+                    
+                    <Box sx={{ mb: 3 }}>
+                        <video 
+                            ref={localVideoref} 
+                            autoPlay 
+                            muted
+                            style={{
+                                width: '100%',
+                                maxWidth: 400,
+                                height: 225,
+                                borderRadius: 12,
+                                backgroundColor: '#000',
+                                margin: '0 auto',
+                                display: 'block'
+                            }}
+                        />
+                    </Box>
+                    
+                    <TextField 
+                        fullWidth
+                        label="Your Name" 
+                        value={username} 
+                        onChange={e => setUsername(e.target.value)} 
+                        variant="outlined" 
+                        margin="normal"
+                        sx={{ mb: 3 }}
+                    />
+                    
+                    <Button 
+                        fullWidth 
+                        variant="contained" 
+                        onClick={connect}
+                        size="large"
+                        disabled={!username.trim()}
+                        sx={{
+                            py: 1.5,
+                            fontSize: '1.1rem',
+                            background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                            '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
+                            },
+                            transition: 'all 0.3s ease',
+                        }}
+                    >
+                        Join Meeting
+                    </Button>
+                </Card>
+            ) : (
 
-                <div>
+
+                <Box sx={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100vh',
+                    bgcolor: 'background.default',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}>
+
+                    {showModal && (
+                        <Box sx={{
+                            position: 'fixed',
+                            bottom: 80,
+                            right: 20,
+                            width: 320,
+                            height: 400,
+                            bgcolor: 'background.paper',
+                            borderRadius: 2,
+                            boxShadow: 3,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            zIndex: 1000,
+                            overflow: 'hidden',
+                        }}>
+                            <Box sx={{
+                                p: 2,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                            }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Chat</Typography>
+                                <IconButton size="small" onClick={closeChat} sx={{ color: 'white' }}>
+                                    ✕
+                                </IconButton>
+                            </Box>
+                            <Box sx={{
+                                flex: 1,
+                                p: 2,
+                                overflowY: 'auto',
+                                '&::-webkit-scrollbar': {
+                                    width: '6px',
+                                },
+                                '&::-webkit-scrollbar-thumb': {
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    borderRadius: '3px',
+                                },
+                            }}>
+                                {messages.length > 0 ? (
+                                    messages.map((item, index) => (
+                                        <Box key={index} sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                                                {item.sender}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: 'text.primary', wordBreak: 'break-word' }}>
+                                                {item.data}
+                                            </Typography>
+                                        </Box>
+                                    ))
+                                ) : (
+                                    <Box sx={{ 
+                                        height: '100%', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center',
+                                        color: 'text.secondary',
+                                        textAlign: 'center',
+                                        p: 2
+                                    }}>
+                                        <Typography>No messages yet. Say hello! 👋</Typography>
+                                    </Box>
+                                )}
+                            </Box>
+                            <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <TextField
+                                        fullWidth
+                                        size="small"
+                                        placeholder="Type a message..."
+                                        value={message}
+                                        onChange={handleMessage}
+                                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                        variant="outlined"
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: 2,
+                                                '& fieldset': {
+                                                    borderColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&:hover fieldset': {
+                                                    borderColor: 'primary.main',
+                                                },
+                                            },
+                                        }}
+                                    />
+                                    <Button 
+                                        variant="contained" 
+                                        onClick={sendMessage}
+                                        disabled={!message.trim()}
+                                        sx={{
+                                            minWidth: 'auto',
+                                            px: 2,
+                                            background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                                            '&:hover': {
+                                                transform: 'translateY(-1px)',
+                                            },
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        Send
+                                    </Button>
+                                </Box>
+                            </Box>
+                        </Box>
+                    )}
 
 
-                    <h2>Enter into Lobby </h2>
-                    <TextField id="outlined-basic" label="Username" value={username} onChange={e => setUsername(e.target.value)} variant="outlined" />
-                    <Button variant="contained" onClick={connect}>Connect</Button>
-
-
-                    <div>
-                        <video ref={localVideoref} autoPlay muted></video>
-                    </div>
-
-                </div> :
-
-
-                <div className={styles.meetVideoContainer}>
-
-                    {showModal ? <div className={styles.chatRoom}>
-
-                        <div className={styles.chatContainer}>
-                            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8}}>
-                                <h2 style={{margin: 0, fontSize: 22, fontWeight: 700, color: '#222'}}>Chat</h2>
-                                <Button size="small" variant="outlined" color="primary" style={{borderRadius: 8, fontWeight: 600, fontSize: 13, padding: '2px 10px'}} onClick={closeChat}>Close</Button>
-                            </div>
-                            <div className={styles.chattingDisplay} style={{flex: 1, overflowY: 'auto', minHeight: 120, maxHeight: 220, marginBottom: 8}}>
-                                {messages.length !== 0 ? messages.map((item, index) => (
-                                    <div style={{ marginBottom: "16px" }} key={index}>
-                                        <p style={{ fontWeight: "bold", marginBottom: 2, color: '#667eea' }}>{item.sender}</p>
-                                        <p style={{ margin: 0, color: '#222' }}>{item.data}</p>
-                                    </div>
-                                )) : <p style={{color: '#888'}}>No Messages Yet</p>}
-                            </div>
-                            <div className={styles.chattingArea} style={{display: 'flex', gap: 8}}>
-                                <TextField value={message} onChange={(e) => setMessage(e.target.value)} id="outlined-basic" label="Enter Your chat" variant="outlined" size="small" style={{flex: 1}} />
-                                <Button variant='contained' onClick={sendMessage} size="small" style={{fontWeight: 600}}>Send</Button>
-                            </div>
-                        </div>
-                    </div> : <></>}
-
-
-                    <div className={styles.buttonContainers}>
-                        <IconButton onClick={handleVideo} style={{ color: "white" }}>
-                            {(video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+                    <Box sx={{
+                        position: 'fixed',
+                        bottom: 20,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        display: 'flex',
+                        gap: 1,
+                        bgcolor: 'rgba(30, 30, 30, 0.8)',
+                        backdropFilter: 'blur(10px)',
+                        borderRadius: 50,
+                        p: 1,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                        zIndex: 100,
+                    }}>
+                        <IconButton 
+                            onClick={toggleVideo} 
+                            sx={{ 
+                                color: videoAvailable ? 'white' : '#ff4444',
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                '&:hover': {
+                                    bgcolor: 'rgba(255,255,255,0.2)',
+                                    transform: 'scale(1.1)',
+                                },
+                                transition: 'all 0.2s ease',
+                                width: 48,
+                                height: 48,
+                            }}
+                        >
+                            {videoAvailable ? <VideocamIcon /> : <VideocamOffIcon />}
                         </IconButton>
-                        <IconButton onClick={handleEndCall} style={{ color: "red" }}>
-                            <CallEndIcon  />
-                        </IconButton>
-                        <IconButton onClick={handleAudio} style={{ color: "white" }}>
-                            {audio === true ? <MicIcon /> : <MicOffIcon />}
+                        
+                        <IconButton 
+                            onClick={handleAudio} 
+                            sx={{ 
+                                color: audio ? 'white' : '#ff4444',
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                '&:hover': {
+                                    bgcolor: 'rgba(255,255,255,0.2)',
+                                    transform: 'scale(1.1)',
+                                },
+                                transition: 'all 0.2s ease',
+                                width: 48,
+                                height: 48,
+                            }}
+                        >
+                            {audio ? <MicIcon /> : <MicOffIcon />}
                         </IconButton>
 
-                        {screenAvailable === true ?
-                            <IconButton onClick={handleScreen} style={{ color: "white" }}>
-                                {screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
-                            </IconButton> : <></>}
+                        {screenAvailable && (
+                            <IconButton 
+                                onClick={handleScreen} 
+                                sx={{ 
+                                    color: 'white',
+                                    bgcolor: 'rgba(255,255,255,0.1)',
+                                    '&:hover': {
+                                        bgcolor: screen ? 'rgba(255,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+                                        transform: 'scale(1.1)',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                    width: 48,
+                                    height: 48,
+                                }}
+                            >
+                                {screen ? <StopScreenShareIcon sx={{ color: '#ff4444' }} /> : <ScreenShareIcon />}
+                            </IconButton>
+                        )}
 
-                        <Badge badgeContent={newMessages} max={999} color='orange'>
-                            <IconButton onClick={() => setModal(!showModal)} style={{ color: "white" }}>
-                                <ChatIcon />                        </IconButton>
+                        <Badge 
+                            badgeContent={newMessages} 
+                            max={999} 
+                            color="error"
+                            sx={{ 
+                                '& .MuiBadge-badge': {
+                                    top: 5,
+                                    right: 5,
+                                    border: '2px solid #1e1e1e',
+                                    padding: '0 4px',
+                                },
+                            }}
+                        >
+                            <IconButton 
+                                onClick={() => setModal(!showModal)} 
+                                sx={{ 
+                                    color: 'white',
+                                    bgcolor: 'rgba(255,255,255,0.1)',
+                                    '&:hover': {
+                                        bgcolor: 'rgba(255,255,255,0.2)',
+                                        transform: 'scale(1.1)',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                    width: 48,
+                                    height: 48,
+                                }}
+                            >
+                                <ChatIcon />
+                            </IconButton>
                         </Badge>
 
-                    </div>
+                        <IconButton 
+                            onClick={handleEndCall} 
+                            sx={{ 
+                                color: 'white',
+                                bgcolor: '#ff4444',
+                                '&:hover': {
+                                    bgcolor: '#ff0000',
+                                    transform: 'scale(1.1)',
+                                },
+                                transition: 'all 0.2s ease',
+                                width: 48,
+                                height: 48,
+                                ml: 1,
+                            }}
+                        >
+                            <CallEndIcon />
+                        </IconButton>
+                    </Box>
 
 
-                    <video
-                        ref={localVideoref}
-                        autoPlay
-                        muted
-                        className={styles.meetUserVideo}
-                        style={{ left: 20, right: 'auto', zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '3px solid #fff' }}
-                    />
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            right: 20,
+                            top: 20,
+                            width: 180,
+                            height: 120,
+                            borderRadius: 2,
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                            border: '2px solid rgba(255,255,255,0.2)',
+                            zIndex: 100,
+                            '&:hover': {
+                                transform: 'scale(1.05)',
+                                boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+                            },
+                            transition: 'all 0.3s ease',
+                        }}
+                    >
+                        <video
+                            ref={localVideoref}
+                            autoPlay
+                            muted
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                backgroundColor: '#000',
+                            }}
+                        />
+                        <Box sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            p: 1,
+                            background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                            color: 'white',
+                            fontSize: '0.75rem',
+                            textAlign: 'left',
+                            pl: 1.5,
+                        }}>
+                            {username || 'You'}
+                        </Box>
+                    </Box>
 
-                    <div className={styles.conferenceView}>
+                    <Box sx={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        p: 2,
+                        position: 'relative',
+                    }}>
                         {videos.length === 0 ? (
-                            <div style={{width: '100vw', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 24, fontWeight: 600}}>
-                                Waiting for other participant to join...
-                            </div>
+                            <Box sx={{
+                                textAlign: 'center',
+                                color: 'text.secondary',
+                                maxWidth: 500,
+                                p: 4,
+                            }}>
+                                <Box sx={{
+                                    width: 120,
+                                    height: 120,
+                                    borderRadius: '50%',
+                                    bgcolor: 'rgba(102, 126, 234, 0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    mx: 'auto',
+                                    mb: 3,
+                                }}>
+                                    <VideocamIcon sx={{ fontSize: 50, color: 'primary.main' }} />
+                                </Box>
+                                <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
+                                    Waiting for participants
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
+                                    Share the meeting link with others to invite them to join
+                                </Typography>
+                                <Button 
+                                    variant="outlined" 
+                                    color="primary"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(window.location.href);
+                                        // You might want to add a snackbar/toast here
+                                    }}
+                                    sx={{
+                                        borderRadius: 2,
+                                        textTransform: 'none',
+                                        px: 3,
+                                        py: 1,
+                                    }}
+                                >
+                                    Copy meeting link
+                                </Button>
+                            </Box>
                         ) : (
-                            <video
-                                data-socket={videos[0].socketId}
-                                ref={ref => {
-                                    if (ref && videos[0].stream) {
-                                        ref.srcObject = videos[0].stream;
-                                    }
-                                }}
-                                autoPlay
-                                className={styles.remoteVideo}
-                                style={{ width: '100vw', height: '100%', objectFit: 'cover', borderRadius: 18, background: '#000' }}
-                            />
+                            <Box sx={{
+                                width: '100%',
+                                height: '100%',
+                                maxWidth: '90vw',
+                                maxHeight: '80vh',
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                                position: 'relative',
+                            }}>
+                                <video
+                                    data-socket={videos[0].socketId}
+                                    ref={ref => {
+                                        if (ref && videos[0].stream) {
+                                            ref.srcObject = videos[0].stream;
+                                        }
+                                    }}
+                                    autoPlay
+                                    playsInline
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        backgroundColor: '#000',
+                                    }}
+                                />
+                                <Box sx={{
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    p: 2,
+                                    background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                                    color: 'white',
+                                }}>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                        {videos[0].socketId === socketIdRef.current ? 'You' : 'Participant'}
+                                    </Typography>
+                                </Box>
+                            </Box>
                         )}
-                    </div>
-
-                </div>
-
-            }
-
-        </div>
-    )
-}
+                    </Box>
+                </Box>
+            )}
+        </Box>
+    </ThemeProvider>
+  );
+};

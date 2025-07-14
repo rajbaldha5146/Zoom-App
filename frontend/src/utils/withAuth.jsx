@@ -6,10 +6,12 @@ const withAuth = (WrappedComponent ) => {
         const router = useNavigate();
 
         const isAuthenticated = () => {
-            if(localStorage.getItem("token")) {
-                return true;
-            } 
-            return false;
+            const cookieValue = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('token='))
+                ?.split('=')[1];
+            
+            return !!cookieValue;
         }
 
         useEffect(() => {
