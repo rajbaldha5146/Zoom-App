@@ -1,8 +1,8 @@
 let IS_PROD = true;
 const server = IS_PROD ?
-    // "https://zoom-app-nity.onrender.com" :
+    "https://zoom-app-nity.onrender.com" :
 
-    "http://localhost:8000":
+    // "http://localhost:8000":
     "http://localhost:8000"
 
 
