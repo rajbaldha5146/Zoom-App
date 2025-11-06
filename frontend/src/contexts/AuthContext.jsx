@@ -1,6 +1,6 @@
 import axios from "axios";
 import httpStatus from "http-status";
-import { createContext, useContext, useState } from "react";
+import { createContext } from "react";
 import { useNavigate } from "react-router-dom";
 import server from "../environment";
 
@@ -13,13 +13,6 @@ const client = axios.create({
 
 
 export const AuthProvider = ({ children }) => {
-
-    const authContext = useContext(AuthContext);
-
-
-    const [userData, setUserData] = useState(authContext);
-
-
     const router = useNavigate();
 
     const handleRegister = async (name, username, password) => {
@@ -46,12 +39,11 @@ export const AuthProvider = ({ children }) => {
                 password: password
             });
 
-            console.log(username, password)
-            console.log(request.data)
-
             if (request.status === httpStatus.OK) {
-                document.cookie = `token=${request.data.token}; path=/; max-age=${60*60*24*7}`; // 1 week expiry
-                router("/home")
+                // Use localStorage instead of cookies for simplicity
+                localStorage.setItem("token", request.data.token);
+                localStorage.setItem("username", username);
+                router("/home");
             }
         } catch (err) {
             throw err;
@@ -62,7 +54,7 @@ export const AuthProvider = ({ children }) => {
         try {
             let request = await client.get("/get_all_activity", {
                 params: {
-                    token: getCookie("token")
+                    token: localStorage.getItem("token")
                 }
             });
             return request.data
@@ -74,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     const addToUserHistory = async (meetingCode) => {
         try {
             let request = await client.post("/add_to_activity", {
-                token: getCookie("token"),
+                token: localStorage.getItem("token"),
                 meeting_code: meetingCode
             });
             return request
@@ -83,14 +75,8 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
-    const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-    }
-
     const data = {
-        userData, setUserData, addToUserHistory, getHistoryOfUser, handleRegister, handleLogin
+        addToUserHistory, getHistoryOfUser, handleRegister, handleLogin
     }
 
     return (

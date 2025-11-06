@@ -22,18 +22,30 @@ app.use(express.urlencoded({ limit: "40kb", extended: true }));
 app.use("/api/v1/users", userRoutes);
 
 const start = async () => {
-    app.set("mongo_user")
-    const connectionDb = await mongoose.connect("mongodb+srv://usedummy0:m7R0j2hY3vLvGwMZ@cluster0.wusyo.mongodb.net/Zoom")
+    try {
+        const connectionDb = await mongoose.connect("mongodb+srv://usedummy0:m7R0j2hY3vLvGwMZ@cluster0.wusyo.mongodb.net/Zoom")
 
-    console.log(`MONGO Connected DB HOst: ${connectionDb.connection.host}`)
-    server.listen(app.get("port"), () => {
-        console.log("LISTENIN ON PORT 8000")
-    });
-
-
-
+        console.log(`MONGO Connected DB HOst: ${connectionDb.connection.host}`)
+        
+        const port = app.get("port");
+        server.listen(port, () => {
+            console.log(`LISTENING ON PORT ${port}`)
+        }).on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                console.error(`\n❌ ERROR: Port ${port} is already in use!`)
+                console.error(`Please kill the process using port ${port} or use a different port.\n`)
+                console.error('To find and kill the process:')
+                console.error(`  Windows: netstat -ano | findstr :${port}`)
+                console.error(`  Then: taskkill /PID <PID> /F`)
+                process.exit(1);
+            } else {
+                throw err;
+            }
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
 }
-
-
 
 start();

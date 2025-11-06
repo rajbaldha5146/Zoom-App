@@ -1,26 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom';
-import { 
-    Card, 
-    Box, 
-    CardActions, 
-    CardContent, 
-    Button, 
-    Typography, 
-    IconButton,
-    Container,
-    Grid,
-    Paper,
-    Chip,
-    Divider,
-    Skeleton
-} from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';
-import VideoCallIcon from '@mui/icons-material/VideoCall';
-import HistoryIcon from '@mui/icons-material/History';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CodeIcon from '@mui/icons-material/Code';
+import styles from '../styles/History.module.css';
 
 export default function History() {
     const { getHistoryOfUser } = useContext(AuthContext);
@@ -75,229 +56,109 @@ export default function History() {
     };
 
     return (
-        <Box sx={{ 
-            minHeight: '100vh', 
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            py: 4
-        }}>
-            <Container maxWidth="lg">
+        <div className={styles.historyContainer}>
+            <div className={styles.container}>
                 {/* Header */}
-                <Paper
-                    elevation={0}
-                    sx={{
-                        p: 4,
-                        mb: 4,
-                        borderRadius: 4,
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <HistoryIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-                            <Box>
-                                <Typography
-                                    variant="h4"
-                                    sx={{
-                                        fontWeight: 800,
-                                        background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent',
-                                        backgroundClip: 'text',
-                                    }}
-                                >
-                                    Meeting History
-                                </Typography>
-                                <Typography variant="body1" color="text.secondary">
-                                    Your recent video call sessions
-                                </Typography>
-                            </Box>
-                        </Box>
+                <div className={styles.header}>
+                    <div className={styles.headerContent}>
+                        <div className={styles.titleSection}>
+                            <div className={styles.iconContainer}>
+                                <span className={styles.historyIcon}>🕒</span>
+                            </div>
+                            <div>
+                                <h1 className={styles.title}>Meeting History</h1>
+                                <p className={styles.subtitle}>Your recent video call sessions</p>
+                            </div>
+                        </div>
                         
-                        <Button
-                            variant="outlined"
-                            startIcon={<HomeIcon />}
+                        <button
+                            className={styles.backButton}
                             onClick={() => routeTo("/home")}
-                            sx={{
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                borderRadius: 3,
-                                px: 3,
-                                py: 1.5,
-                                borderColor: 'primary.main',
-                                color: 'primary.main',
-                                '&:hover': {
-                                    backgroundColor: 'primary.main',
-                                    color: 'white',
-                                },
-                            }}
                         >
+                            <span className={styles.icon}>🏠</span>
                             Back to Home
-                        </Button>
-                    </Box>
+                        </button>
+                    </div>
 
-                    <Divider sx={{ my: 2 }} />
+                    <div className={styles.divider}></div>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Chip
-                            icon={<VideoCallIcon />}
-                            label={`${meetings.length} meeting${meetings.length !== 1 ? 's' : ''}`}
-                            color="primary"
-                            variant="outlined"
-                        />
-                    </Box>
-                </Paper>
+                    <div className={styles.statsSection}>
+                        <div className={styles.statChip}>
+                            <span className={styles.chipIcon}>📹</span>
+                            {meetings.length} meeting{meetings.length !== 1 ? 's' : ''}
+                        </div>
+                    </div>
+                </div>
 
                 {/* Meeting Cards */}
                 {loading ? (
-                    <Grid container spacing={3}>
+                    <div className={styles.loadingGrid}>
                         {[1, 2, 3].map((item) => (
-                            <Grid item xs={12} md={6} lg={4} key={item}>
-                                <Skeleton
-                                    variant="rectangular"
-                                    height={200}
-                                    sx={{ borderRadius: 3 }}
-                                />
-                            </Grid>
+                            <div key={item} className={styles.loadingSkeleton}></div>
                         ))}
-                    </Grid>
+                    </div>
                 ) : meetings.length === 0 ? (
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            p: 8,
-                            textAlign: 'center',
-                            borderRadius: 4,
-                            background: 'rgba(255, 255, 255, 0.9)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-                        }}
-                    >
-                        <HistoryIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 3, opacity: 0.5 }} />
-                        <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: 'text.secondary' }}>
-                            No meetings yet
-                        </Typography>
-                        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                    <div className={styles.emptyState}>
+                        <span className={styles.emptyIcon}>🕒</span>
+                        <h2 className={styles.emptyTitle}>No meetings yet</h2>
+                        <p className={styles.emptyText}>
                             Join your first meeting to see it appear here
-                        </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<VideoCallIcon />}
+                        </p>
+                        <button
+                            className={styles.ctaButton}
                             onClick={() => routeTo("/home")}
-                            sx={{
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                borderRadius: 3,
-                                px: 4,
-                                py: 1.5,
-                                fontSize: '1.1rem',
-                            }}
                         >
+                            <span className={styles.icon}>📹</span>
                             Join a Meeting
-                        </Button>
-                    </Paper>
+                        </button>
+                    </div>
                 ) : (
-                    <Grid container spacing={3}>
+                    <div className={styles.meetingsGrid}>
                         {meetings.map((meeting, index) => (
-                            <Grid item xs={12} md={6} lg={4} key={index}>
-                                <Card
-                                    elevation={0}
-                                    sx={{
-                                        height: '100%',
-                                        borderRadius: 3,
-                                        background: 'rgba(255, 255, 255, 0.9)',
-                                        backdropFilter: 'blur(10px)',
-                                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-5px)',
-                                            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-                                        },
-                                    }}
-                                >
-                                    <CardContent sx={{ p: 3 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                            <Box
-                                                sx={{
-                                                    width: 50,
-                                                    height: 50,
-                                                    borderRadius: '50%',
-                                                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: 'white',
-                                                }}
-                                            >
-                                                <VideoCallIcon />
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                                    Meeting #{index + 1}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {getTimeAgo(meeting.date)}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
+                            <div key={index} className={styles.meetingCard}>
+                                <div className={styles.cardHeader}>
+                                    <div className={styles.meetingIcon}>📹</div>
+                                    <div className={styles.meetingInfo}>
+                                        <h3 className={styles.meetingTitle}>Meeting #{index + 1}</h3>
+                                        <p className={styles.meetingTime}>{getTimeAgo(meeting.date)}</p>
+                                    </div>
+                                </div>
 
-                                        <Divider sx={{ my: 2 }} />
+                                <div className={styles.cardDivider}></div>
 
-                                        <Box sx={{ mb: 2 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                                <CodeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
-                                                <Typography variant="body2" color="text.secondary">
-                                                    Meeting Code:
-                                    </Typography>
-                                            </Box>
-                                            <Chip
-                                                label={meeting.meetingCode}
-                                                variant="outlined"
-                                                color="primary"
-                                                sx={{ fontWeight: 600 }}
-                                            />
-                                        </Box>
+                                <div className={styles.cardContent}>
+                                    <div className={styles.codeSection}>
+                                        <div className={styles.codeLabel}>
+                                            <span className={styles.codeIcon}>💻</span>
+                                            Meeting Code:
+                                        </div>
+                                        <div className={styles.codeChip}>
+                                            {meeting.meetingCode}
+                                        </div>
+                                    </div>
 
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <AccessTimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                            <Typography variant="body2" color="text.secondary">
-                                                {formatDate(meeting.date)}
-                                    </Typography>
-                                        </Box>
-                                </CardContent>
+                                    <div className={styles.dateSection}>
+                                        <span className={styles.dateIcon}>⏰</span>
+                                        <span className={styles.dateText}>
+                                            {formatDate(meeting.date)}
+                                        </span>
+                                    </div>
+                                </div>
 
-                                    <CardActions sx={{ p: 3, pt: 0 }}>
-                                        <Button
-                                            fullWidth
-                                            variant="contained"
-                                            startIcon={<VideoCallIcon />}
-                                            onClick={() => routeTo(`/${meeting.meetingCode}`)}
-                                            sx={{
-                                                textTransform: 'none',
-                                                fontWeight: 600,
-                                                borderRadius: 2,
-                                                py: 1.5,
-                                                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-                                                '&:hover': {
-                                                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
-                                                    transform: 'translateY(-2px)',
-                                                },
-                                                transition: 'all 0.3s ease',
-                                            }}
-                                        >
-                                            Rejoin Meeting
-                                        </Button>
-                                    </CardActions>
-                            </Card>
-                            </Grid>
+                                <div className={styles.cardActions}>
+                                    <button
+                                        className={styles.rejoinButton}
+                                        onClick={() => routeTo(`/${meeting.meetingCode}`)}
+                                    >
+                                        <span className={styles.icon}>📹</span>
+                                        Rejoin Meeting
+                                    </button>
+                                </div>
+                            </div>
                         ))}
-                    </Grid>
+                    </div>
                 )}
-            </Container>
-        </Box>
+            </div>
+        </div>
     );
 }
